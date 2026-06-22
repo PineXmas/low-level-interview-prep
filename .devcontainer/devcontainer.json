@@ -1,0 +1,16 @@
+{
+    "name": "Low-Level Practice Environment",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+    "features": {
+        "ghcr.io/devcontainers/features/common-utils:1": {}
+    },
+    "updateContentCommand": "apt-get update && apt-get install -y build-essential",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.cpptools",
+                "matepek.vscode-catch2-testadapter"
+            ]
+        }
+    }
+}

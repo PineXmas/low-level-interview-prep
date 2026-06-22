@@ -1,0 +1,12 @@
+{
+    "testMate.cpp.test.advancedExecutables": [
+        {
+            "pattern": "problems/**/test_runner.c",
+            "executionWrapper": {
+                "program": "make",
+                "args": ["-C", "${fileDirname}", "&&", "${fileDirname}/test.out"]
+            }
+        }
+    ],
+    "testMate.cpp.log.logLevel": "info"
+}
