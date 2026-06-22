@@ -1,10 +1,6 @@
 {
     "name": "Low-Level Practice Environment",
-    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
-    "features": {
-        "ghcr.io/devcontainers/features/common-utils:1": {}
-    },
-    "updateContentCommand": "apt-get update && apt-get install -y build-essential",
+    "image": "mcr.microsoft.com/devcontainers/cpp:1-ubuntu-24.04",
     "customizations": {
         "vscode": {
             "extensions": [
