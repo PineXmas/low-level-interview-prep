@@ -1,0 +1,115 @@
+{
+  "name": "vscode-acutest-test-adapter",
+  "displayName": "Acutest Test Explorer",
+  "description": "Run your Acutest tests in the Sidebar of Visual Studio Code",
+  "icon": "img/icon.png",
+  "author": "James",
+  "publisher": "moosecasa",
+  "version": "0.0.6",
+  "license": "MIT",
+  "homepage": "https://github.com/moosecasa/vscode-acutest-test-adapter",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/moosecasa/vscode-acutest-test-adapter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/moosecasa/vscode-acutest-test-adapter/issues"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "C",
+    "C++",
+    "Unit Test",
+    "Acutest",
+    "test",
+    "testing"
+  ],
+  "main": "out/main.js",
+  "scripts": {
+    "clean": "rimraf out *.vsix",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "rebuild": "npm run clean && npm run build",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "dependencies": {
+    "tslib": "^1.9.3",
+    "vscode-test-adapter-api": "^1.7.0",
+    "vscode-test-adapter-util": "^0.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.31",
+    "@types/vscode": "~1.23.0",
+    "esbuild": "^0.12.21",
+    "typescript": "^3.5.3",
+    "vsce": "^1.85.1"
+  },
+  "engines": {
+    "vscode": "^1.23.0"
+  },
+  "extensionDependencies": [
+    "hbenl.vscode-test-explorer"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "Acutest Test Explorer configuration",
+      "properties": {
+        "acutestExplorer.testExecutable": {
+          "description": "Relative path to executable that contains all tests",
+          "default": "",
+          "type": "string",
+          "scope": "resource"
+        },
+        "acutestExplorer.testsourceFile": {
+          "description": "Relative path to test source code containing TEST_LIST definition",
+          "default": "",
+          "type": "string",
+          "scope": "resource"
+        },
+        "acutestExplorer.testGroups": {
+          "description": "List of workspace-relative directories containing Acutest groups",
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "scope": "resource"
+        },
+        "acutestExplorer.testGroupsExeFile": {
+          "description": "Executable filename used by each test group",
+          "default": "test.out",
+          "type": "string",
+          "scope": "resource"
+        },
+        "acutestExplorer.testGroupsSrcFile": {
+          "description": "Source filename used by each test group",
+          "default": "test_runner.c",
+          "type": "string",
+          "scope": "resource"
+        },
+        "acutestExplorer.logpanel": {
+          "description": "write diagnotic logs to an output panel",
+          "type": "boolean",
+          "scope": "resource"
+        },
+        "acutestExplorer.logfile": {
+          "description": "write diagnostic logs to the given file",
+          "type": "string",
+          "scope": "resource"
+        }
+      }
+    }
+  },
+  "__metadata": {
+    "installedTimestamp": 1782149420741,
+    "targetPlatform": "undefined",
+    "size": 321405
+  }
+}

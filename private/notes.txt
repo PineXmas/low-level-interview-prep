@@ -1,0 +1,24 @@
+Acutest.js is modified to fix:
+- flexibly concat workspace path and file path
+- parse test result more flexibly: allowing spaces in test name, tolerate printing to console message in the result output
+- allow multiple test groups syntax via: testGroups, testGroupsExeFile, testGroupsSrcFile
+    Example of settings.json
+    {
+    "acutestExplorer.testGroups": [
+        "problems/self_check",
+        "problems/self_check_2"
+    ],
+    "acutestExplorer.testGroupsExeFile": "test.out",
+    "acutestExplorer.testGroupsSrcFile": "test_runner.c",
+    "acutestExplorer.logpanel": true
+    }
+
+
+Paths
+/home/vscode/.vscode-remote/extensions/moosecasa.vscode-acutest-test-adapter-0.0.6/out/Acutest.js
+/home/vscode/.vscode-remote/extensions/moosecasa.vscode-acutest-test-adapter-0.0.6/package.json
+
+See [extension_modifications] for modified contents
+
+TODO:
+- add auto test discovery after Build is done
