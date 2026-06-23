@@ -1,4 +1,4 @@
-#include "../../shared/acutest.h"
+#include "acutest.h"
 #include <stdio.h>
 
 void test_hello_world(void) {
