@@ -10,13 +10,8 @@ void test_passed(void) {
     TEST_CHECK(1 == 1);
 }
 
-void test_passed_2(void) {
-    TEST_CHECK(1 == 1);
-}
-
 TEST_LIST = {
     { "Verify Hello World UI Execution", test_hello_world },
     { "Verify Passed Test Execution", test_passed },
-    { "Verify Passed Test Execution 2", test_passed_2 },
     { NULL, NULL }
 };

@@ -1,5 +1,9 @@
 {
-    "acutestExplorer.testExecutable": "problems/self_check/test.out",
-    "acutestExplorer.testsourceFile": "problems/self_check/test_runner.c",
-    "acutestExplorer.logpanel": true
+  "acutestExplorer.testGroups": [
+    "problems/self_check",
+    "problems/self_check_2"
+  ],
+  "acutestExplorer.testGroupsExeFile": "test.out",
+  "acutestExplorer.testGroupsSrcFile": "test_runner.c",
+  "acutestExplorer.logpanel": true
 }
