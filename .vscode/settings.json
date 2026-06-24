@@ -4,7 +4,8 @@
     "problems/self_check_2",
     "problems/bit_manip",
     "problems/swap_2_nums",
-    "problems/check_power_of_2"
+    "problems/check_power_of_2",
+    "problems/memcpy"
   ],
   "acutestExplorer.testGroupsExeFile": "test.out",
   "acutestExplorer.testGroupsSrcFile": "test_runner.c",

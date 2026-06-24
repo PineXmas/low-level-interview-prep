@@ -1,9 +1,7 @@
-include ../../shared/common.mk
+# define Project Root relative to Makefile location
+PROJ_ROOT := $(abspath ../..)
 
-all: test.out
+TARGET    := test.out
+SOURCES   := test_runner.c
 
-test.out: test_runner.c
-	$(CC) $(CFLAGS) test_runner.c -o test.out
-
-clean:
-	rm -f test.out
+include $(PROJ_ROOT)/shared/common.mk
