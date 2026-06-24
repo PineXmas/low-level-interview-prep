@@ -2,7 +2,8 @@
   "acutestExplorer.testGroups": [
     "problems/self_check",
     "problems/self_check_2",
-    "problems/bit_manip"
+    "problems/bit_manip",
+    "problems/swap_2_nums"
   ],
   "acutestExplorer.testGroupsExeFile": "test.out",
   "acutestExplorer.testGroupsSrcFile": "test_runner.c",
