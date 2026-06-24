@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build all problems",
+      "label": "Build all",
       "type": "shell",
       "command": "bash",
       "args": ["-lc", "for d in ${workspaceFolder}/problems/*/; do if [ -f \"$d/Makefile\" ]; then echo Building $d; (cd \"$d\" && make); fi; done"],
@@ -11,6 +11,19 @@
         "kind": "build",
         "isDefault": true
       },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Clean all",
+      "type": "shell",
+      "command": "bash",
+      "args": ["-lc", "for d in ${workspaceFolder}/problems/*/; do if [ -f \"$d/Makefile\" ]; then echo Cleaning $d; (cd \"$d\" && make clean); fi; done"],
+      "problemMatcher": ["$gcc"],
       "presentation": {
         "echo": true,
         "reveal": "always",

@@ -1,5 +1,4 @@
-CC = gcc
-CFLAGS = -Wall -Wextra -I../../shared
+include ../../shared/common.mk
 
 all: test.out
 
