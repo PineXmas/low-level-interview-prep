@@ -1,7 +1,6 @@
 {
   "acutestExplorer.testGroups": [
     "problems/self_check",
-    "problems/self_check_2",
     "problems/bit_manip",
     "problems/swap_2_nums",
     "problems/check_power_of_2",
