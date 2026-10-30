@@ -64,8 +64,10 @@ This refactor includes:
 9. Automatically deriving each target name from its problem directory.
 10. Automatically compiling all local `.c` files for standard problems.
 11. Automatically registering problem subdirectories from the root CMake file.
-12. Removing legacy files only after each migrated problem is verified.
-13. Verifying the complete new framework workflow.
+12. Removing legacy files after the new workflow is established and migrated
+    targets are verified.
+13. Verifying the complete new framework workflow while accepting expected
+    failures from unfinished problem implementations.
 
 ## 4. Explicit Non-Goals
 
@@ -94,10 +96,6 @@ The target repository structure is:
 ```text
 .
 |-- CMakeLists.txt
-|-- cmake/
-|   `-- templates/
-|       |-- standard-problem.cmake
-|       `-- special-problem.cmake
 |-- problems/
 |   |-- <problem_name>/
 |   |   |-- CMakeLists.txt
@@ -105,22 +103,36 @@ The target repository structure is:
 |   |   |-- <implementation>.c
 |   |   `-- <implementation>.h
 |   `-- ...
-|-- shared/
+|-- shared/                    # temporary legacy source, removed at cleanup
 |   `-- ...
-|-- third_party/
-|   `-- googletest/
+|-- infra/
+|   |-- CMakeLists.txt
+|   |-- cmake/
+|   |   `-- templates/
+|   |       |-- standard-problem.cmake
+|   |       `-- special-problem.cmake
+|   |-- support/
+|   |   `-- ...
+|   `-- third_party/
+|       `-- googletest/
 `-- build/
 ```
 
 `build/` is an out-of-source generated directory and must remain ignored by
 Git.
 
+The root `CMakeLists.txt` is the conventional project entrypoint. It defines
+the project, enables testing, establishes the repository root, and adds
+`infra/`. The framework implementation and vendored dependencies belong under
+`infra/`; the root file is only project-level orchestration.
+
 The architecture has these responsibilities:
 
 | Layer | Responsibility |
 |---|---|
 | Dev Container | Provides GCC, Make, CMake, CTest, and the normal C/C++ tools |
-| Root CMake | Adds GoogleTest and problem subdirectories |
+| Root CMake | Defines the project and adds the infrastructure |
+| Infrastructure CMake | Adds GoogleTest and migrated problem subdirectories |
 | Problem manifest | Includes the standard or special problem template |
 | Standard template | Defines the default target, sources, includes, and tests |
 | Special template | Provides an explicit-source customization starting point |
@@ -170,7 +182,7 @@ GoogleTest is a source dependency rather than a tool supplied by the base
 container. The repository will vendor the upstream GoogleTest source under:
 
 ```text
-third_party/googletest/
+infra/third_party/googletest/
 ```
 
 The initial migration will use GoogleTest release **v1.17.0**, copied directly
@@ -182,9 +194,9 @@ linked, or used by this project during the initial migration. Keeping the
 upstream GoogleMock source temporarily is acceptable and can be optimized in
 a later dependency-maintenance phase.
 
-The root CMake file will add the vendored GoogleTest source locally rather than
-fetching it during configuration. A clean configure/build must not require
-network access.
+The infrastructure CMake file will add the vendored GoogleTest source locally
+rather than fetching it during configuration. A clean configure/build must not
+require network access.
 
 ## 7. Standard Problem Contract
 
@@ -207,7 +219,7 @@ For a standard problem:
 - no local `.c` file may be an alternate build variant;
 - the problem target is named `prob_<problem_name>`;
 - the problem include directory is available;
-- the shared include directory is available; and
+- the new infrastructure support include directory is available when needed;
 - GoogleTest/CTest registration is added automatically.
 
 Existing names are preserved. For example:
@@ -231,13 +243,13 @@ renamed.
 The standard template will live at:
 
 ```text
-cmake/templates/standard-problem.cmake
+infra/cmake/templates/standard-problem.cmake
 ```
 
 Each ordinary problem's `CMakeLists.txt` will contain only:
 
 ```cmake
-include("${PROJECT_SOURCE_DIR}/cmake/templates/standard-problem.cmake")
+include("${REPOSITORY_ROOT}/infra/cmake/templates/standard-problem.cmake")
 ```
 
 The included template will:
@@ -246,14 +258,14 @@ The included template will:
 2. create target `prob_<problem_name>`;
 3. collect all local `*.c` files;
 4. add `test_runner.cpp`;
-5. add problem and shared include directories;
+5. add problem and infrastructure support include directories;
 6. link GoogleTest;
 7. register tests through `gtest_discover_tests`; and
 8. apply the `problem` CTest label.
 
 Because the file is included from a problem directory, the template must use
 `CMAKE_CURRENT_SOURCE_DIR` to identify the problem folder. It must not use
-`CMAKE_CURRENT_LIST_DIR`, which points to `cmake/templates/`.
+`CMAKE_CURRENT_LIST_DIR`, which points to `infra/cmake/templates/`.
 
 The source glob should use `CONFIGURE_DEPENDS` so CMake can notice changes to
 the list of local C files:
@@ -269,14 +281,14 @@ file(GLOB PROBLEM_C_SOURCES CONFIGURE_DEPENDS
 The special template will live at:
 
 ```text
-cmake/templates/special-problem.cmake
+infra/cmake/templates/special-problem.cmake
 ```
 
 It will demonstrate explicit source lists and clearly commented customization
 sections. It is intended for problems that need:
 
 - selected rather than all local C files;
-- additional shared source files;
+- additional infrastructure support source files;
 - additional libraries;
 - special compile definitions;
 - platform-specific setup; or
@@ -288,29 +300,40 @@ do not silently alter existing problems.
 
 ## 9. Root CMake Problem Registration
 
-Automatic validation of problem contents is deferred. The initial root CMake
-will assume that every direct directory under `problems/` is intentionally
-created as a valid problem directory.
+The root `CMakeLists.txt` will establish:
 
-The root CMake will automatically add problem subdirectories rather than
-requiring a central list of individual problem names. Conceptually:
+- `REPOSITORY_ROOT` as the repository root;
+- testing support;
+- the `infra/` subdirectory; and
+- the supported project-wide CMake workflow.
+
+The infrastructure CMake file will automatically inspect direct directories
+under `problems/`. During migration, it will add only directories containing a
+`CMakeLists.txt`, allowing unmigrated directories to be ignored:
 
 ```cmake
 file(GLOB PROBLEM_DIRECTORIES CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}/problems/*"
+    "${REPOSITORY_ROOT}/problems/*"
 )
 
 foreach(PROBLEM_DIRECTORY IN LISTS PROBLEM_DIRECTORIES)
-    if(IS_DIRECTORY "${PROBLEM_DIRECTORY}")
+    if(IS_DIRECTORY "${PROBLEM_DIRECTORY}"
+       AND EXISTS "${PROBLEM_DIRECTORY}/CMakeLists.txt")
         add_subdirectory("${PROBLEM_DIRECTORY}")
     endif()
 endforeach()
 ```
 
-The initial implementation will not inspect whether a problem directory
-contains the expected files. If a user creates an incomplete problem
-directory, CMake is allowed to report the resulting normal configuration or
-build error.
+The initial implementation will not validate the contents of a directory
+that has a `CMakeLists.txt`. If a migrated problem is incomplete, CMake is
+allowed to report the resulting normal configuration or build error.
+
+Problem manifests are components of the repository project and are not
+required to configure independently. The supported command is:
+
+```bash
+cmake -S . -B build
+```
 
 ## 10. C and C++ Boundary
 
@@ -330,7 +353,8 @@ not weaken assertions merely to make a converted test compile.
 
 ## 11. Expected Test Results
 
-The repository has two separate test expectations.
+The repository distinguishes framework validation from intentionally unfinished
+exercise behavior.
 
 ### 11.1 Framework behavior that must pass
 
@@ -351,8 +375,13 @@ The migration must verify that:
 Tests for unfinished problem implementations are expected to fail until a user
 implements the exercise. This is normal and is not a framework failure.
 
-The migration must not modify implementations just to make the migration
-tests pass.
+The migration must not modify implementations just to make the exercise tests
+pass. Remaining failures in migrated problem tests are accepted once the
+targets compile, link, register with CTest, and execute normally.
+
+The old Make/Acutest workflow is not a validation target during this refactor.
+Unmigrated problems may be ignored while the migration proceeds because the
+legacy files are removed after the new workflow is established.
 
 ## 12. Checkpoint-Based Migration Plan
 
@@ -422,19 +451,24 @@ Suggested commit:
 chore: verify cmake build toolchain in dev container
 ```
 
-### Step 2: Vendor GoogleTest
+### Step 2: Create the infrastructure layout and vendor GoogleTest
 
 **Objective**
 
-Add a local, offline-capable GoogleTest dependency.
+Create the new infrastructure location and add a local, offline-capable
+GoogleTest dependency.
 
 **Actions**
 
+- Add `infra/CMakeLists.txt`.
 - Add the selected GoogleTest v1.17.0 source under
-  `third_party/googletest/`.
+  `infra/third_party/googletest/`.
+- Add `infra/cmake/templates/` for the standard and special templates.
+- Add `infra/support/` for reusable sources needed by migrated problems.
 - Preserve upstream license and attribution files.
 - Do not configure or use GoogleMock.
-- Do not change problem tests yet.
+- Keep the existing `shared/` directory unchanged for reference during
+  migration; it is not part of the new workflow.
 
 **Verification**
 
@@ -449,7 +483,7 @@ Suggested commit:
 build: vendor googletest for offline test builds
 ```
 
-### Step 3: Add the root CMake smoke target
+### Step 3: Add the root CMake entrypoint and smoke target
 
 **Objective**
 
@@ -457,9 +491,10 @@ Prove that CMake can build and run GoogleTest before migrating any problem.
 
 **Actions**
 
-- Add the root `CMakeLists.txt`.
+- Add the root `CMakeLists.txt` as the conventional project entrypoint.
 - Set the required C language standard for candidate code.
-- Add the vendored GoogleTest subdirectory.
+- Establish `REPOSITORY_ROOT` from the root project directory.
+- Add `infra/`, where the vendored GoogleTest subdirectory is configured.
 - Enable CTest.
 - Add a small framework smoke test target.
 - Register the smoke test with CTest.
@@ -490,7 +525,7 @@ Create the default per-problem build contract.
 
 **Actions**
 
-- Add `cmake/templates/standard-problem.cmake`.
+- Add `infra/cmake/templates/standard-problem.cmake`.
 - Detect the problem directory from `CMAKE_CURRENT_SOURCE_DIR`.
 - Derive target `prob_<folder_name>`.
 - Collect all local `*.c` files.
@@ -522,7 +557,7 @@ source layout.
 
 **Actions**
 
-- Add `cmake/templates/special-problem.cmake`.
+- Add `infra/cmake/templates/special-problem.cmake`.
 - Use explicit source lists.
 - Comment the sections users are expected to customize.
 - Document when a special manifest is appropriate.
@@ -540,19 +575,20 @@ Suggested commit:
 build: add special problem cmake template
 ```
 
-### Step 6: Add automatic root problem-directory registration
+### Step 6: Add automatic migrated-problem registration
 
 **Objective**
 
-Have the root CMake add every direct problem subdirectory without maintaining
-an individual central registry.
+Have the infrastructure CMake file add migrated problem subdirectories without
+maintaining an individual central registry.
 
 **Actions**
 
-- Add `CONFIGURE_DEPENDS` directory globbing for `problems/*`.
-- Add each discovered directory with `add_subdirectory`.
+- Add `CONFIGURE_DEPENDS` directory globbing for the repository's
+  `problems/*`.
+- Add only discovered directories containing `CMakeLists.txt`.
 - Do not add problem-content validation yet.
-- Keep the assumption that problem authors follow the documented contract.
+- Ignore directories that have not yet been migrated.
 
 **Verification**
 
@@ -560,8 +596,8 @@ an individual central registry.
 cmake -S . -B build
 ```
 
-The current problem directories may still fail configuration until their
-individual manifests are migrated. That transitional failure is expected.
+Unmigrated problem directories are ignored. A migrated directory with an
+incomplete manifest may fail configuration normally.
 
 **Checkpoint**
 
@@ -586,7 +622,8 @@ existing test group.
 4. Rename the original runner to `test_runner.c.old`.
 5. Configure and build the new target.
 6. Verify CTest discovery and execution.
-7. Confirm the test passes.
+7. Confirm the framework can discover and execute the test. The
+   `self_check` exercise must pass because it is the framework smoke problem.
 8. Remove `test_runner.c.old` after successful verification.
 9. Remove the old problem Makefile.
 
@@ -683,7 +720,7 @@ Validate a problem that explicitly uses a shared implementation detail.
 - Convert the test runner.
 - Preserve the existing public spelling and API names.
 - Use the special template or an explicit source addition as needed for the
-  shared source and test linkage.
+  infrastructure support source and test linkage.
 - Verify the unfinished implementation's failure is reported normally.
 - Remove old files after verification.
 
@@ -740,8 +777,8 @@ refactor: migrate bit manipulation problem to cmake and googletest
 
 **Objective**
 
-Validate a problem with an implementation-specific filename and shared test
-utility source.
+Validate a problem with an implementation-specific filename and reusable
+support utility source.
 
 **Actions**
 
@@ -749,8 +786,9 @@ utility source.
 - Copy the test runner to `test_runner.cpp`.
 - Rename the original runner to `test_runner.c.old`.
 - Convert memory comparisons and allocation tests to GoogleTest.
-- Explicitly include `shared/utils.c` through the special manifest or another
-  documented special configuration.
+- Copy `shared/utils.c` and `shared/utils.h` to `infra/support/` before this
+  migration if the utility is still needed. Include the infrastructure copy
+  through the special manifest or another documented special configuration.
 - Add any required standard headers exposed by the C++ conversion.
 - Remove old files after verification.
 
@@ -783,7 +821,7 @@ Validate migration of overlapping-memory tests and shared test utilities.
 - Copy the runner to `test_runner.cpp`.
 - Rename the original runner to `test_runner.c.old`.
 - Convert overlap, boundary, identical-pointer, and string tests.
-- Explicitly include `shared/utils.c`.
+- Include `infra/support/utils.c`.
 - Confirm the C++ conversion does not change pointer or allocation behavior.
 - Remove old files after verification.
 
@@ -817,8 +855,11 @@ Confirm that all problems are represented by the new framework.
 - Build all targets.
 - List all registered tests.
 - Run the framework smoke test.
-- Run all problem tests and record expected exercise failures separately.
-- Confirm every problem target has the expected `prob_<folder_name>` naming.
+- Run the framework label and confirm migrated problem targets build, register,
+  and execute. Do not treat unfinished exercise failures as framework
+  failures.
+- Confirm every migrated problem target has the expected
+  `prob_<folder_name>` naming.
 
 **Verification**
 
@@ -827,11 +868,12 @@ cmake -S . -B build
 cmake --build build
 ctest --test-dir build -N
 ctest --test-dir build -L framework --output-on-failure
-ctest --test-dir build -L problem --output-on-failure
 ```
 
-The framework label must pass. Problem failures caused by unfinished
-implementations are expected.
+The framework label must pass. The problem tests may be run separately to
+verify discovery and reporting; their nonzero result is expected when
+unfinished implementations fail their assertions and must be recorded
+separately from framework failures.
 
 **Checkpoint**
 
@@ -849,10 +891,14 @@ Remove legacy infrastructure only after all problems use the new workflow.
 
 **Actions**
 
-- Confirm no migrated target depends on Acutest.
-- Confirm no migrated target depends on `shared/common.mk`.
+- Confirm no migrated target depends on Acutest, `shared/common.mk`, or
+  `shared/utils.c`.
+- Confirm reusable utilities needed by migrated targets are under
+  `infra/support/`.
 - Remove `shared/acutest.h`.
 - Remove `shared/common.mk`.
+- Remove the obsolete `shared/utils.c` and `shared/utils.h` after all migrated
+  consumers use `infra/support/`.
 - Remove obsolete Acutest extension modifications and notes.
 - Remove old Acutest-specific VS Code settings and tasks.
 - Remove any remaining problem Makefiles and `.old` runner files.
@@ -861,8 +907,8 @@ Remove legacy infrastructure only after all problems use the new workflow.
 
 **Verification**
 
-- Search the repository for remaining Acutest, old Makefile, and old runner
-  references.
+- Search the repository for remaining Acutest, old Makefile, old runner, and
+  `shared/` references.
 - Configure and build from a clean `build/` directory.
 - Run the framework smoke test.
 - Confirm no new workflow target references deleted files.
@@ -883,7 +929,7 @@ The migration is complete when:
 - GoogleTest is available offline from the repository;
 - CMake configures without downloading dependencies;
 - the framework smoke test passes;
-- all current problem directories are registered automatically;
+- all migrated problem directories are registered automatically;
 - each standard problem target is named `prob_<folder_name>`;
 - standard problems compile `test_runner.cpp` and all local `.c` files;
 - special problems can explicitly control their source lists;
@@ -891,6 +937,10 @@ The migration is complete when:
 - test runners use GoogleTest C++;
 - CTest discovers individual tests;
 - the framework does not require unfinished exercises to pass;
+- migrated problem targets compile, link, register with CTest, and execute even
+  when their exercise assertions fail;
+- all substantive new framework code and dependencies are under `infra/`;
+- the old `shared/` directory is removed after its consumers are gone; and
 - old files are removed only after their replacements are verified; and
 - the documented new workflow can be used from a clean build directory.
 
@@ -927,7 +977,7 @@ is introduced.
 
 ### Priority 3: Future exercise support
 
-1. Define a supported `shared/support/` layout for reusable utilities.
+1. Define a supported `infra/support/` layout for reusable utilities.
 2. Define a separate, explicit policy for optional reference implementations.
 3. Add future exercises such as ring buffers, producer/consumer systems, and
    static memory pools.
@@ -960,11 +1010,11 @@ Rename the old runner to `test_runner.c.old` before configuring the new target.
 Use the special template for any problem that cannot obey the standard
 directory contract.
 
-### Risk: mixed build systems become confusing
+### Risk: migrated and legacy files are confused
 
-During migration, clearly identify which problems have moved and which still
-use legacy files. Keep shared legacy infrastructure until no remaining
-problem depends on it.
+The old Make/Acutest workflow is not part of migration validation. Keep the
+legacy files only as migration references, do not add new dependencies on
+them, and remove them after all migrated targets use the new infrastructure.
 
 ### Risk: vendored dependency is incomplete
 
