@@ -1,9 +1,8 @@
 ---
-name: Execute single action
-description: Execute exactly one requested action with strict scope, inspection, verification, and reporting
-agent: agent
+name: execute-single-action
+description: "Execute exactly one requested action with strict scope, inspection, verification, and reporting"
+disable-model-invocation: true
 ---
-
 Execute exactly one specific action from the user's request.
 
 - Inspect the relevant files, context, and existing behavior before editing.
