@@ -14,7 +14,11 @@ file(GLOB PROBLEM_DIRECTORIES CONFIGURE_DEPENDS
 foreach(PROBLEM_DIRECTORY IN LISTS PROBLEM_DIRECTORIES)
     if(IS_DIRECTORY "${PROBLEM_DIRECTORY}"
        AND EXISTS "${PROBLEM_DIRECTORY}/CMakeLists.txt")
-        add_subdirectory("${PROBLEM_DIRECTORY}")
+        get_filename_component(PROBLEM_NAME "${PROBLEM_DIRECTORY}" NAME)
+        add_subdirectory(
+            "${PROBLEM_DIRECTORY}"
+            "${CMAKE_CURRENT_BINARY_DIR}/problems/${PROBLEM_NAME}"
+        )
     endif()
 endforeach()
 
