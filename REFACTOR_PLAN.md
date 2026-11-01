@@ -598,7 +598,7 @@ Suggested commit:
 build: register problem directories from root cmake
 ```
 
-### Step 6: Migrate `000_example`
+### ✅ Step 6: Migrate `000_example`
 
 **Objective**
 
@@ -629,6 +629,13 @@ that also proves the standard template's C/header/linkage behavior.
 cmake -S . -B build
 cmake --build build
 ctest --test-dir build -R prob_000_example --output-on-failure
+```
+
+The discovered example tests are named `Example.HelloWorld` and
+`Example.Sum`, so the targeted verification command is:
+
+```bash
+ctest --test-dir build -R 'Example\.' --output-on-failure
 ```
 
 **Checkpoint**
@@ -976,44 +983,44 @@ The following features are intentionally deferred. They should be revisited in
 the order below so the framework remains useful before additional complexity
 is introduced.
 
-### Priority 1: Important framework reliability
+### Priority 1: Onboarding and core workflow
 
-1. Add validation for malformed problem directories.
-2. Add a problem-directory naming validation and normalization script. It
-   should identify a newly added problem without a three-digit prefix, derive
-   the next number after the current maximum, rename only the problem
-   directory, run the framework build and tests, and report whether the
-   result is acceptable. It must leave files inside the problem directory
-   unchanged.
-3. Add a scaffolding command that creates a complete, correctly numbered
-   problem directory from the standard template.
-4. Make the scaffolding command update or coordinate root registration if
-   manual registration still exists.
-5. Add framework tests for the scaffolding and naming-validation commands and
-   template output.
-6. Add clear problem status metadata so expected unfinished failures are
-   distinguishable from infrastructure regressions.
-7. Add a single documented command for configuring, building, and listing
-   tests.
-8. Improve dependency tracking and warning flags for C and C++ targets.
+1. Automate Dev Container onboarding. Opening the repository in the Dev
+   Container should provide the required compiler, CMake/CTest tools, VS Code
+   extensions, CMake configuration, compiler selection, and repository
+   settings with minimal manual interaction. Document unavoidable steps such
+   as reopening in the container and workspace trust.
+2. Design and implement a simple VS Code workflow where users can build and
+   test only the selected problem with minimal interaction, while also
+   providing clear commands for building and testing all problems. New
+   problem directories must be discovered automatically without per-problem
+   VS Code configuration. The workflow should refresh tests after configure
+   or build, provide useful failure output, and include a documented command
+   fallback.
+3. Add problem-directory validation and scaffolding. Validate directory
+   naming and required files, provide clear errors, and add a command to
+   create a correctly numbered problem from the standard template. Validation
+   should report invalid names rather than silently renaming existing user
+   directories. Add framework tests for validation, scaffolding, and template
+   output.
+4. Add framework diagnostics and problem status metadata so configuration,
+   build, discovery, infrastructure, and expected unfinished-exercise
+   failures are clearly distinguishable.
 
-### Priority 2: Important development experience
+### Priority 2: Build and maintenance quality
 
-1. Integrate CTest with a supported VS Code test interface.
-2. Add automatic test refresh after a successful build.
-3. Improve error messages for missing `CMakeLists.txt`,
-   `test_runner.cpp`, or implementation sources.
-4. Add optional AddressSanitizer and UndefinedBehaviorSanitizer support.
-5. Add CI that invokes the problem-directory naming validation and framework
-   build/test workflow. A new unnumbered problem should be normalized
-   temporarily to the next available number for validation; the change should
-   be accepted only if the framework checks pass apart from documented
-   unfinished-exercise failures. The CI should report the proposed rename (or
-   apply it through an explicit automation step), rather than silently
-   changing a contributor's commit.
-6. Add reproducible dependency update instructions for vendored GoogleTest.
+1. Improve compiler diagnostics, warning flags, and dependency tracking for C
+   and C++ targets.
+2. Add optional AddressSanitizer and UndefinedBehaviorSanitizer
+   configurations without changing the default practice workflow.
+3. Add CI for configuration, build, discovery, and documented unfinished
+   exercise failures. CI should report invalid problem names and proposed
+   normalization without silently changing a contributor's commit.
+4. Add reproducible offline dependency-update instructions for vendored
+   GoogleTest, preserving licenses and verifying clean configuration and
+   builds.
 
-### Priority 3: Future exercise support
+### Priority 3: Exercise framework expansion
 
 1. Define a supported `infra/support/` layout for reusable utilities.
 2. Define a separate, explicit policy for optional reference implementations.
@@ -1023,9 +1030,9 @@ is introduced.
    platform-specific sources, or generated data.
 5. Consider GoogleMock only if future exercises genuinely require mocking.
 
-### Priority 4: Cross-platform and maintenance improvements
+### Priority 4: Portability and long-term maintenance
 
-1. Validate the workflow on Linux, macOS, Windows/WSL, and Codespaces.
+1. Validate the supported Dev Container workflow on Linux and Codespaces.
 2. Pin or document Dev Container image versions and update policy.
 3. Add line-ending policy and cross-platform shell guidance.
 4. Improve full project documentation after the new workflow stabilizes.
