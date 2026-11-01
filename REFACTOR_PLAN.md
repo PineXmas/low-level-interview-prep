@@ -97,7 +97,8 @@ The target repository structure is:
 .
 |-- CMakeLists.txt
 |-- problems/
-|   |-- <problem_name>/
+|   |-- 000_example/         # canonical example and framework integration test
+|   |-- 001_<problem_name>/
 |   |   |-- CMakeLists.txt
 |   |   |-- test_runner.cpp
 |   |   |-- <implementation>.c
@@ -138,6 +139,18 @@ The architecture has these responsibilities:
 | Special template | Provides an explicit-source customization starting point |
 | CTest | Discovers and runs individual GoogleTest cases |
 | Problem implementation | Remains candidate-owned C code |
+
+The `infra/support/framework_smoke_test.cpp` target is an infrastructure-level
+smoke test. It verifies that the vendored GoogleTest dependency can be built,
+linked, and executed, but it does not validate the per-problem directory
+contract.
+
+The `problems/000_example/` directory is the canonical example problem and the
+framework's per-problem integration test. It verifies that the documented
+problem-folder layout can be configured, that the standard template links a
+C++ GoogleTest runner with C implementation code and a public header, and that
+CTest discovers and executes the tests in that problem directory. Users can
+copy this directory as a starting point for adding future problems.
 
 ## 6. Tool and Dependency Ownership
 
@@ -203,7 +216,7 @@ require network access.
 The standard problem contract is:
 
 ```text
-problems/<problem_name>/
+problems/<3-digit>_<problem_name>/
 |-- CMakeLists.txt
 |-- test_runner.cpp
 |-- one or more implementation .c files
@@ -217,7 +230,12 @@ For a standard problem:
 - every local `.c` file is treated as an implementation source;
 - no local `.c` file may define another `main()`;
 - no local `.c` file may be an alternate build variant;
-- the problem target is named `prob_<problem_name>`;
+- the three-digit prefix is an organizational directory naming convention
+  indicating problem introduction order;
+- the prefix applies only to the problem directory name. Files inside the
+  directory keep their problem-specific names, such as `swap_2_nums.c`,
+  `swap_2_nums.h`, and `test_runner.cpp`;
+- the problem target is named `prob_<folder_name>`, including the prefix;
 - the problem include directory is available;
 - the new infrastructure support include directory is available when needed;
 - GoogleTest/CTest registration is added automatically.
@@ -225,7 +243,7 @@ For a standard problem:
 Existing names are preserved. For example:
 
 ```text
-problems/memcpy/
+problems/005_memcpy/
 |-- CMakeLists.txt
 |-- test_runner.cpp
 |-- my_memcpy.c
@@ -254,8 +272,8 @@ include("${REPOSITORY_ROOT}/infra/cmake/templates/standard-problem.cmake")
 
 The included template will:
 
-1. derive the problem name from `CMAKE_CURRENT_SOURCE_DIR`;
-2. create target `prob_<problem_name>`;
+1. derive the folder name from `CMAKE_CURRENT_SOURCE_DIR`;
+2. create target `prob_<folder_name>`;
 3. collect all local `*.c` files;
 4. add `test_runner.cpp`;
 5. add problem and infrastructure support include directories;
@@ -517,7 +535,7 @@ Suggested commit:
 build: add cmake ctest and googletest smoke target
 ```
 
-### Step 4: Add the standard CMake template
+### ✅ Step 4: Add the standard CMake template
 
 **Objective**
 
@@ -548,34 +566,7 @@ Suggested commit:
 build: add standard problem cmake template
 ```
 
-### Step 5: Add the special CMake template
-
-**Objective**
-
-Provide a clear starting point for problems that do not fit the standard
-source layout.
-
-**Actions**
-
-- Add `infra/cmake/templates/special-problem.cmake`.
-- Use explicit source lists.
-- Comment the sections users are expected to customize.
-- Document when a special manifest is appropriate.
-
-**Verification**
-
-- The template is readable and can be adapted without relying on hidden root
-  behavior.
-
-**Checkpoint**
-
-Suggested commit:
-
-```text
-build: add special problem cmake template
-```
-
-### Step 6: Add automatic migrated-problem registration
+### Step 5: Add automatic migrated-problem registration
 
 **Objective**
 
@@ -607,32 +598,37 @@ Suggested commit:
 build: register problem directories from root cmake
 ```
 
-### Step 7: Migrate `self_check`
+### Step 6: Migrate `000_example`
 
 **Objective**
 
-Validate the complete per-problem migration procedure with the smallest
-existing test group.
+Validate the complete per-problem migration procedure with a canonical example
+that also proves the standard template's C/header/linkage behavior.
 
 **Actions**
 
-1. Add the problem's `CMakeLists.txt` using the standard template.
-2. Copy `test_runner.c` to `test_runner.cpp`.
-3. Convert the copied runner to GoogleTest syntax.
-4. Rename the original runner to `test_runner.c.old`.
-5. Configure and build the new target.
-6. Verify CTest discovery and execution.
-7. Confirm the framework can discover and execute the test. The
-   `self_check` exercise must pass because it is the framework smoke problem.
-8. Remove `test_runner.c.old` after successful verification.
-9. Remove the old problem Makefile.
+1. Rename the existing `self_check` problem directory to `000_example`.
+2. Add the problem's `CMakeLists.txt` using the standard template.
+3. Copy `test_runner.c` to `test_runner.cpp`.
+4. Convert the copied runner to GoogleTest syntax.
+5. Add a simple `sum` function in `sum.c` with its declaration in `sum.h`.
+6. Include `sum.h` from `test_runner.cpp` and test that two integers produce
+   the expected integer result.
+7. Rename the original runner to `test_runner.c.old`.
+8. Configure and build the new target.
+9. Verify CTest discovery and execution.
+10. Confirm the framework can discover and execute the example problem. This
+   validates the documented folder layout, standard template, C source
+   collection, header include path, C/C++ linkage, and test execution.
+11. Remove `test_runner.c.old` after successful verification.
+12. Remove the old problem Makefile.
 
 **Verification**
 
 ```bash
 cmake -S . -B build
 cmake --build build
-ctest --test-dir build -R prob_self_check --output-on-failure
+ctest --test-dir build -R prob_000_example --output-on-failure
 ```
 
 **Checkpoint**
@@ -640,10 +636,10 @@ ctest --test-dir build -R prob_self_check --output-on-failure
 Suggested commit:
 
 ```text
-refactor: migrate self check to cmake and googletest
+refactor: migrate example problem to cmake and googletest
 ```
 
-### Step 8: Migrate `swap_2_nums`
+### Step 7: Migrate `001_swap_2_nums`
 
 **Objective**
 
@@ -676,7 +672,7 @@ Suggested commit:
 refactor: migrate swap problem to cmake and googletest
 ```
 
-### Step 9: Migrate `check_power_of_2`
+### Step 8: Migrate `002_check_power_of_2`
 
 **Objective**
 
@@ -708,7 +704,7 @@ Suggested commit:
 refactor: migrate power of two problem to cmake and googletest
 ```
 
-### Step 10: Migrate `endianess_detection`
+### Step 9: Migrate `003_endianess_detection`
 
 **Objective**
 
@@ -739,7 +735,7 @@ Suggested commit:
 refactor: migrate endianess problem to cmake and googletest
 ```
 
-### Step 11: Migrate `bit_manip`
+### Step 10: Migrate `004_bit_manip`
 
 **Objective**
 
@@ -773,7 +769,34 @@ Suggested commit:
 refactor: migrate bit manipulation problem to cmake and googletest
 ```
 
-### Step 12: Migrate `memcpy`
+### Step 11: Add the special CMake template
+
+**Objective**
+
+Provide a clear starting point for problems that do not fit the standard
+source layout before migrating the first such problem.
+
+**Actions**
+
+- Add `infra/cmake/templates/special-problem.cmake`.
+- Use explicit source lists.
+- Comment the sections users are expected to customize.
+- Document when a special manifest is appropriate.
+
+**Verification**
+
+- The template is readable and can be adapted without relying on hidden root
+  behavior.
+
+**Checkpoint**
+
+Suggested commit:
+
+```text
+build: add special problem cmake template
+```
+
+### Step 12: Migrate `005_memcpy`
 
 **Objective**
 
@@ -809,7 +832,7 @@ Suggested commit:
 refactor: migrate memcpy problem to cmake and googletest
 ```
 
-### Step 13: Migrate `memmove`
+### Step 13: Migrate `006_memmove`
 
 **Objective**
 
@@ -854,7 +877,8 @@ Confirm that all problems are represented by the new framework.
 - Configure from a clean build directory.
 - Build all targets.
 - List all registered tests.
-- Run the framework smoke test.
+- Run the infrastructure framework smoke test and the `000_example` problem
+  integration test.
 - Run the framework label and confirm migrated problem targets build, register,
   and execute. Do not treat unfinished exercise failures as framework
   failures.
@@ -910,7 +934,8 @@ Remove legacy infrastructure only after all problems use the new workflow.
 - Search the repository for remaining Acutest, old Makefile, old runner, and
   `shared/` references.
 - Configure and build from a clean `build/` directory.
-- Run the framework smoke test.
+- Run the infrastructure framework smoke test and the `000_example` problem
+  integration test.
 - Confirm no new workflow target references deleted files.
 
 **Checkpoint**
@@ -928,7 +953,8 @@ The migration is complete when:
 - a clean Dev Container provides GCC, Make, CMake, and CTest;
 - GoogleTest is available offline from the repository;
 - CMake configures without downloading dependencies;
-- the framework smoke test passes;
+- the infrastructure framework smoke test passes;
+- the `000_example` problem integration test passes;
 - all migrated problem directories are registered automatically;
 - each standard problem target is named `prob_<folder_name>`;
 - standard problems compile `test_runner.cpp` and all local `.c` files;
@@ -953,16 +979,23 @@ is introduced.
 ### Priority 1: Important framework reliability
 
 1. Add validation for malformed problem directories.
-2. Add a scaffolding command that creates a complete problem directory from
-   the standard template.
-3. Make the scaffolding command update or coordinate root registration if
+2. Add a problem-directory naming validation and normalization script. It
+   should identify a newly added problem without a three-digit prefix, derive
+   the next number after the current maximum, rename only the problem
+   directory, run the framework build and tests, and report whether the
+   result is acceptable. It must leave files inside the problem directory
+   unchanged.
+3. Add a scaffolding command that creates a complete, correctly numbered
+   problem directory from the standard template.
+4. Make the scaffolding command update or coordinate root registration if
    manual registration still exists.
-4. Add framework tests for the scaffolding command and template output.
-5. Add clear problem status metadata so expected unfinished failures are
+5. Add framework tests for the scaffolding and naming-validation commands and
+   template output.
+6. Add clear problem status metadata so expected unfinished failures are
    distinguishable from infrastructure regressions.
-6. Add a single documented command for configuring, building, and listing
+7. Add a single documented command for configuring, building, and listing
    tests.
-7. Improve dependency tracking and warning flags for C and C++ targets.
+8. Improve dependency tracking and warning flags for C and C++ targets.
 
 ### Priority 2: Important development experience
 
@@ -971,8 +1004,13 @@ is introduced.
 3. Improve error messages for missing `CMakeLists.txt`,
    `test_runner.cpp`, or implementation sources.
 4. Add optional AddressSanitizer and UndefinedBehaviorSanitizer support.
-5. Add CI that validates framework functionality without requiring exercise
-   implementations to pass.
+5. Add CI that invokes the problem-directory naming validation and framework
+   build/test workflow. A new unnumbered problem should be normalized
+   temporarily to the next available number for validation; the change should
+   be accepted only if the framework checks pass apart from documented
+   unfinished-exercise failures. The CI should report the proposed rename (or
+   apply it through an explicit automation step), rather than silently
+   changing a contributor's commit.
 6. Add reproducible dependency update instructions for vendored GoogleTest.
 
 ### Priority 3: Future exercise support
