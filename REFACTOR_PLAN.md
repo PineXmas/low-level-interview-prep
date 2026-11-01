@@ -988,8 +988,11 @@ is introduced.
 1. Automate Dev Container onboarding. Opening the repository in the Dev
    Container should provide the required compiler, CMake/CTest tools, VS Code
    extensions, CMake configuration, compiler selection, and repository
-   settings with minimal manual interaction. Document unavoidable steps such
-   as reopening in the container and workspace trust.
+   settings with minimal manual interaction. Include the
+   `fredericbonnet.cmake-test-adapter` CMake Test Explorer extension in the
+   default extension list so the CMake/CTest test UI and problem-suite
+   grouping work immediately after container creation. Document unavoidable
+   steps such as reopening in the container and workspace trust.
 2. Design and implement a simple VS Code workflow where users can build and
    test only the selected problem with minimal interaction, while also
    providing clear commands for building and testing all problems. New

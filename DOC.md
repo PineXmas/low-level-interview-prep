@@ -1,5 +1,12 @@
 # Low-Level Interview Prep: Project and Framework Guide
 
+> **Refactor documentation note:** The repository is currently undergoing a
+> framework refactor. Defer the comprehensive rewrite of this document until
+> the refactor is complete. Until then, record new refactor findings,
+> decisions, and workflow notes in [REFACTOR_PLAN.md](REFACTOR_PLAN.md)
+> instead of adding them here. Future agents should check that plan before
+> documenting refactor-related changes.
+
 ## 1. Project Overview
 
 ### Purpose

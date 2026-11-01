@@ -1,4 +1,6 @@
 {
+  "cmake.ctest.testExplorerIntegrationEnabled": false,
+  "cmakeExplorer.suiteDelimiter": "/",
   "acutestExplorer.testGroups": [
     "problems/self_check",
     "problems/bit_manip",

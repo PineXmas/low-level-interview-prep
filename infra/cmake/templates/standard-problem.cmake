@@ -24,5 +24,6 @@ target_include_directories("${PROBLEM_TARGET}" PRIVATE
 target_link_libraries("${PROBLEM_TARGET}" PRIVATE gtest_main)
 include(GoogleTest)
 gtest_discover_tests("${PROBLEM_TARGET}"
+    TEST_PREFIX "${PROBLEM_NAME}/"
     PROPERTIES LABELS problem
 )
