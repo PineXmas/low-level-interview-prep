@@ -39,12 +39,12 @@ The current repository contains:
 
 Current problem implementation files are intentionally unfinished:
 
-- `bit_manip/bit_manip.c`;
-- `check_power_of_2/check_power_of_2.c`;
-- `endianess_detection/endianess_detection.c`;
-- `memcpy/my_memcpy.c`;
-- `memmove/my_memmove.c`; and
-- `swap_2_nums/swap_2_nums.c`.
+- `004_bit_manip/bit_manip.c`;
+- `002_check_power_of_2/check_power_of_2.c`;
+- `003_endianess_detection/endianess_detection.c`;
+- `005_memcpy/my_memcpy.c`;
+- `006_memmove/my_memmove.c`; and
+- `001_swap_2_nums/swap_2_nums.c`.
 
 The refactor must preserve existing implementation names, including
 `my_memcpy.c` and `my_memmove.c`.
@@ -273,13 +273,19 @@ include("${REPOSITORY_ROOT}/infra/cmake/templates/standard-problem.cmake")
 The included template will:
 
 1. derive the folder name from `CMAKE_CURRENT_SOURCE_DIR`;
-2. create target `prob_<folder_name>`;
+2. create the test binary target `prob_<folder_name>`;
 3. collect all local `*.c` files;
 4. add `test_runner.cpp`;
 5. add problem and infrastructure support include directories;
 6. link GoogleTest;
 7. register tests through `gtest_discover_tests`; and
 8. apply the `problem` CTest label.
+
+The binary target name and discovered CTest names are separate contracts:
+
+- the binary target is exactly `prob_<folder_name>`;
+- discovered tests are prefixed with `<folder_name>/`; and
+- `ctest -R` filters discovered test names, not binary target names.
 
 Because the file is included from a problem directory, the template must use
 `CMAKE_CURRENT_SOURCE_DIR` to identify the problem folder. It must not use
@@ -515,7 +521,7 @@ Prove that CMake can build and run GoogleTest before migrating any problem.
 - Add `infra/`, where the vendored GoogleTest subdirectory is configured.
 - Enable CTest.
 - Add a small framework smoke test target.
-- Register the smoke test with CTest.
+- Register the smoke test with CTest and apply the `framework` label.
 
 **Verification**
 
@@ -628,15 +634,13 @@ that also proves the standard template's C/header/linkage behavior.
 ```bash
 cmake -S . -B build
 cmake --build build
-ctest --test-dir build -R prob_000_example --output-on-failure
+cmake --build build --target prob_000_example
+ctest --test-dir build -R '^000_example/' --output-on-failure
 ```
 
-The discovered example tests are named `Example.HelloWorld` and
-`Example.Sum`, so the targeted verification command is:
-
-```bash
-ctest --test-dir build -R 'Example\.' --output-on-failure
-```
+The discovered example tests are named
+`000_example/Example.HelloWorld`, `000_example/Example.SumEq`, and
+`000_example/Example.SumNotEq`.
 
 **Checkpoint**
 
@@ -646,7 +650,7 @@ Suggested commit:
 refactor: migrate example problem to cmake and googletest
 ```
 
-### Step 7: Migrate `001_swap_2_nums`
+### ✅ Step 7: Migrate `001_swap_2_nums`
 
 **Objective**
 
@@ -654,6 +658,9 @@ Validate migration of a normal C implementation and a simple test suite.
 
 **Actions**
 
+- Confirm the source directory is exactly
+  `problems/001_swap_2_nums/`; the binary target must be
+  `prob_001_swap_2_nums`.
 - Follow the exact runner-copy and `.old` rename procedure.
 - Keep `swap_2_nums.c` and `swap_2_nums.h` unchanged except where required
   for build compatibility.
@@ -666,7 +673,8 @@ Validate migration of a normal C implementation and a simple test suite.
 
 ```bash
 cmake --build build
-ctest --test-dir build -R prob_swap_2_nums --output-on-failure
+cmake --build build --target prob_001_swap_2_nums
+ctest --test-dir build -R '^001_swap_2_nums/' --output-on-failure
 ```
 
 The test may fail because `swap_2_nums.c` is intentionally empty.
@@ -679,6 +687,42 @@ Suggested commit:
 refactor: migrate swap problem to cmake and googletest
 ```
 
+### Step 7A: Define deterministic incomplete-implementation failures
+
+**Discussion placeholder**
+
+Before continuing problem migrations, decide how incomplete implementation
+functions should produce deterministic test failures instead of relying on
+undefined, compiler-dependent, or accidental behavior.
+
+**Scope for next discussion**
+
+- define the supported representation of an unfinished implementation;
+- preserve the practice-oriented incomplete state;
+- make failure behavior stable across supported builds; and
+- keep framework failures distinct from expected exercise failures.
+
+### Migration preflight gate
+
+Before changing any future problem, complete and record these checks:
+
+1. Confirm the directory name matches `problems/<3-digit>_<problem_name>/`
+   and matches the step title exactly.
+2. Confirm the required source and header files are present, and identify
+   which files must remain unchanged.
+3. Confirm the intended binary target name is `prob_<folder_name>`, including
+   the three-digit prefix.
+4. Confirm the intended CTest filter uses `^<folder_name>/`, because it
+   filters discovered test names rather than the binary target.
+5. Stop and correct the layout before editing if any check fails.
+
+After migration, verify all of the following before removing legacy files:
+
+- the expected `prob_<folder_name>` binary target builds;
+- CTest discovers tests under the prefixed problem directory; and
+- the migrated target executes, with assertion failures classified as
+  expected exercise failures when the implementation is unfinished.
+
 ### Step 8: Migrate `002_check_power_of_2`
 
 **Objective**
@@ -687,6 +731,8 @@ Validate a C API whose unfinished implementation currently aborts.
 
 **Actions**
 
+- Apply the migration preflight gate below; the source directory must be
+  exactly `problems/002_check_power_of_2/`.
 - Follow the runner-copy and `.old` rename procedure.
 - Convert the tests to GoogleTest.
 - Preserve the expected abort/failure behavior of the unfinished
@@ -697,7 +743,8 @@ Validate a C API whose unfinished implementation currently aborts.
 
 ```bash
 cmake --build build
-ctest --test-dir build -R prob_check_power_of_2 --output-on-failure
+cmake --build build --target prob_002_check_power_of_2
+ctest --test-dir build -R '^002_check_power_of_2/' --output-on-failure
 ```
 
 Compilation and test execution are the migration requirements; passing the
@@ -719,6 +766,8 @@ Validate a problem that explicitly uses a shared implementation detail.
 
 **Actions**
 
+- Apply the migration preflight gate below; the source directory must be
+  exactly `problems/003_endianess_detection/`.
 - Follow the runner-copy and `.old` rename procedure.
 - Convert the test runner.
 - Preserve the existing public spelling and API names.
@@ -731,7 +780,8 @@ Validate a problem that explicitly uses a shared implementation detail.
 
 ```bash
 cmake --build build
-ctest --test-dir build -R prob_endianess_detection --output-on-failure
+cmake --build build --target prob_003_endianess_detection
+ctest --test-dir build -R '^003_endianess_detection/' --output-on-failure
 ```
 
 **Checkpoint**
@@ -751,6 +801,8 @@ header.
 
 **Actions**
 
+- Apply the migration preflight gate below; the source directory must be
+  exactly `problems/004_bit_manip/`.
 - Copy `test_runner.c` to `test_runner.cpp`.
 - Move or convert the test definitions from `test_bit_manip.h` into an
   appropriate C++ test source arrangement.
@@ -763,7 +815,8 @@ header.
 
 ```bash
 cmake --build build
-ctest --test-dir build -R prob_bit_manip --output-on-failure
+cmake --build build --target prob_004_bit_manip
+ctest --test-dir build -R '^004_bit_manip/' --output-on-failure
 ```
 
 The unfinished implementation may cause the exercise tests to fail.
@@ -785,6 +838,8 @@ source layout before migrating the first such problem.
 
 **Actions**
 
+- Confirm the template contract and directory naming gate are documented
+  before introducing the first special-problem manifest.
 - Add `infra/cmake/templates/special-problem.cmake`.
 - Use explicit source lists.
 - Comment the sections users are expected to customize.
@@ -812,6 +867,8 @@ support utility source.
 
 **Actions**
 
+- Apply the migration preflight gate below; the source directory must be
+  exactly `problems/005_memcpy/`.
 - Preserve `my_memcpy.c` and `my_memcpy.h`.
 - Copy the test runner to `test_runner.cpp`.
 - Rename the original runner to `test_runner.c.old`.
@@ -826,7 +883,8 @@ support utility source.
 
 ```bash
 cmake --build build
-ctest --test-dir build -R prob_memcpy --output-on-failure
+cmake --build build --target prob_005_memcpy
+ctest --test-dir build -R '^005_memcpy/' --output-on-failure
 ```
 
 The unfinished implementation may cause the exercise tests to fail.
@@ -847,6 +905,8 @@ Validate migration of overlapping-memory tests and shared test utilities.
 
 **Actions**
 
+- Apply the migration preflight gate below; the source directory must be
+  exactly `problems/006_memmove/`.
 - Preserve `my_memmove.c` and `my_memmove.h`.
 - Copy the runner to `test_runner.cpp`.
 - Rename the original runner to `test_runner.c.old`.
@@ -859,7 +919,8 @@ Validate migration of overlapping-memory tests and shared test utilities.
 
 ```bash
 cmake --build build
-ctest --test-dir build -R prob_memmove --output-on-failure
+cmake --build build --target prob_006_memmove
+ctest --test-dir build -R '^006_memmove/' --output-on-failure
 ```
 
 The unfinished implementation may cause the exercise tests to fail.
@@ -886,6 +947,8 @@ Confirm that all problems are represented by the new framework.
 - List all registered tests.
 - Run the infrastructure framework smoke test and the `000_example` problem
   integration test.
+- Verify each binary target uses `prob_<folder_name>` and each discovered test
+  uses the `<folder_name>/` prefix.
 - Run the framework label and confirm migrated problem targets build, register,
   and execute. Do not treat unfinished exercise failures as framework
   failures.
@@ -963,6 +1026,7 @@ The migration is complete when:
 - the infrastructure framework smoke test passes;
 - the `000_example` problem integration test passes;
 - all migrated problem directories are registered automatically;
+- all migrated problem directories use the `NNN_problem_name` convention;
 - each standard problem target is named `prob_<folder_name>`;
 - standard problems compile `test_runner.cpp` and all local `.c` files;
 - special problems can explicitly control their source lists;

@@ -1,7 +1,0 @@
-# define Project Root relative to Makefile location
-PROJ_ROOT := $(abspath ../..)
-
-TARGET    := test.out
-SOURCES   := test_runner.c swap_2_nums.c 
-
-include $(PROJ_ROOT)/shared/common.mk

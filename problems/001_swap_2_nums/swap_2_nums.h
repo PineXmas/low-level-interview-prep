@@ -7,6 +7,14 @@
 /*
 Swap 2 given numbers without using extra variables
 */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void swap(uint32_t* a, uint32_t* b);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
