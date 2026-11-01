@@ -566,7 +566,7 @@ Suggested commit:
 build: add standard problem cmake template
 ```
 
-### Step 5: Add automatic migrated-problem registration
+### ✅ Step 5: Add automatic migrated-problem registration
 
 **Objective**
 
