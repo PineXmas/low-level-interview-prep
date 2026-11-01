@@ -390,7 +390,7 @@ checkpoint commit before moving to the next step. Commit messages are
 suggestions; commits should include the repository's required co-author
 trailer when created.
 
-### Step 0: Record the baseline
+### ✅ Step 0: Record the baseline
 
 **Objective**
 
@@ -420,7 +420,7 @@ Suggested commit:
 chore: clean stale test registration before cmake migration
 ```
 
-### Step 1: Verify the container toolchain
+### ✅ Step 1: Verify the container toolchain
 
 **Objective**
 
@@ -451,7 +451,7 @@ Suggested commit:
 chore: verify cmake build toolchain in dev container
 ```
 
-### Step 2: Create the infrastructure layout and vendor GoogleTest
+### ✅ Step 2: Create the infrastructure layout and vendor GoogleTest
 
 **Objective**
 
@@ -483,7 +483,7 @@ Suggested commit:
 build: vendor googletest for offline test builds
 ```
 
-### Step 3: Add the root CMake entrypoint and smoke target
+### ✅ Step 3: Add the root CMake entrypoint and smoke target
 
 **Objective**
 
