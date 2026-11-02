@@ -687,20 +687,46 @@ Suggested commit:
 refactor: migrate swap problem to cmake and googletest
 ```
 
-### Step 7A: Define deterministic incomplete-implementation failures
+### ✅ Step 7A: Define deterministic incomplete-implementation failures
 
-**Discussion placeholder**
+For this practice repository, unfinished implementations must remain
+deterministic without adding an error-reporting API:
 
-Before continuing problem migrations, decide how incomplete implementation
-functions should produce deterministic test failures instead of relying on
-undefined, compiler-dependent, or accidental behavior.
+- an unfinished `void` function may remain empty;
+- an unfinished value-returning function must return a deterministic value in
+  its valid return domain;
+- missing returns, uninitialized reads, and undefined behavior are not
+  acceptable; and
+- accidental passes in some tests are acceptable while other tests expose the
+  incomplete implementation.
 
-**Scope for next discussion**
+### Step 7B: Recheck migrated problems for deterministic returns
 
-- define the supported representation of an unfinished implementation;
-- preserve the practice-oriented incomplete state;
-- make failure behavior stable across supported builds; and
-- keep framework failures distinct from expected exercise failures.
+**Objective**
+
+Review all migrated problems before continuing, and add suitable deterministic
+returns where an unfinished applicable function needs them.
+
+**Actions**
+
+- Recheck `problems/000_example/` and `problems/001_swap_2_nums/`.
+- Keep unfinished `void` functions empty where that is a valid no-op.
+- Add a valid deterministic return to any unfinished value-returning function.
+- Do not change test assertions or complete the exercise implementations.
+
+**Verification**
+
+- Migrated applicable functions contain no missing returns, uninitialized reads,
+  or intentional undefined behavior.
+- Existing framework and migrated-target build behavior is preserved.
+
+**Checkpoint**
+
+Suggested commit:
+
+```text
+chore: make migrated stubs deterministic
+```
 
 ### Migration preflight gate
 
@@ -731,12 +757,14 @@ Validate a C API whose unfinished implementation currently aborts.
 
 **Actions**
 
+- Check that each applicable function has a suitable deterministic return
+  under the Step 7A policy.
 - Apply the migration preflight gate below; the source directory must be
   exactly `problems/002_check_power_of_2/`.
 - Follow the runner-copy and `.old` rename procedure.
 - Convert the tests to GoogleTest.
-- Preserve the expected abort/failure behavior of the unfinished
-  implementation.
+- Preserve the unfinished implementation state while ensuring its behavior is
+  deterministic under the Step 7A policy.
 - Remove legacy files only after the new target executes correctly.
 
 **Verification**
@@ -766,6 +794,8 @@ Validate a problem that explicitly uses a shared implementation detail.
 
 **Actions**
 
+- Check that each applicable function has a suitable deterministic return
+  under the Step 7A policy.
 - Apply the migration preflight gate below; the source directory must be
   exactly `problems/003_endianess_detection/`.
 - Follow the runner-copy and `.old` rename procedure.
@@ -801,6 +831,8 @@ header.
 
 **Actions**
 
+- Check that each applicable function has a suitable deterministic return
+  under the Step 7A policy.
 - Apply the migration preflight gate below; the source directory must be
   exactly `problems/004_bit_manip/`.
 - Copy `test_runner.c` to `test_runner.cpp`.
@@ -838,6 +870,8 @@ source layout before migrating the first such problem.
 
 **Actions**
 
+- Check that any applicable functions involved in this step have suitable
+  deterministic returns under the Step 7A policy.
 - Confirm the template contract and directory naming gate are documented
   before introducing the first special-problem manifest.
 - Add `infra/cmake/templates/special-problem.cmake`.
@@ -867,6 +901,8 @@ support utility source.
 
 **Actions**
 
+- Check that each applicable function has a suitable deterministic return
+  under the Step 7A policy.
 - Apply the migration preflight gate below; the source directory must be
   exactly `problems/005_memcpy/`.
 - Preserve `my_memcpy.c` and `my_memcpy.h`.
@@ -905,6 +941,8 @@ Validate migration of overlapping-memory tests and shared test utilities.
 
 **Actions**
 
+- Check that each applicable function has a suitable deterministic return
+  under the Step 7A policy.
 - Apply the migration preflight gate below; the source directory must be
   exactly `problems/006_memmove/`.
 - Preserve `my_memmove.c` and `my_memmove.h`.
@@ -941,6 +979,8 @@ Confirm that all problems are represented by the new framework.
 
 **Actions**
 
+- Check that each migrated applicable function has a suitable deterministic
+  return under the Step 7A policy.
 - Remove any remaining `.old` runner files.
 - Configure from a clean build directory.
 - Build all targets.
@@ -985,6 +1025,8 @@ Remove legacy infrastructure only after all problems use the new workflow.
 
 **Actions**
 
+- Check that each migrated applicable function has a suitable deterministic
+  return under the Step 7A policy.
 - Confirm no migrated target depends on Acutest, `shared/common.mk`, or
   `shared/utils.c`.
 - Confirm reusable utilities needed by migrated targets are under
