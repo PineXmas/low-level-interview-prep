@@ -1,11 +1,11 @@
 #include "bit_manip.h"
 
 uint8_t get_bit(uint32_t reg, uint8_t offset) {
-    
+    return 0;
 }
 
 uint32_t get_bits(uint32_t reg, uint8_t offset_start, uint8_t offset_end) {
-    
+    return 0;
 }
 
 void set_bit(uint32_t* reg, uint8_t offset) {

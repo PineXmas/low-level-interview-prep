@@ -822,7 +822,7 @@ Suggested commit:
 refactor: migrate endianess problem to cmake and googletest
 ```
 
-### Step 10: Migrate `004_bit_manip`
+### ✅ Step 10: Migrate `004_bit_manip`
 
 **Objective**
 
