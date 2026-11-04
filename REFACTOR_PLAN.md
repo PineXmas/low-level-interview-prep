@@ -749,7 +749,7 @@ After migration, verify all of the following before removing legacy files:
 - the migrated target executes, with assertion failures classified as
   expected exercise failures when the implementation is unfinished.
 
-### Step 8: Migrate `002_check_power_of_2`
+### ✅ Step 8: Migrate `002_check_power_of_2`
 
 **Objective**
 
@@ -786,7 +786,7 @@ Suggested commit:
 refactor: migrate power of two problem to cmake and googletest
 ```
 
-### Step 9: Migrate `003_endianess_detection`
+### ✅ Step 9: Migrate `003_endianess_detection`
 
 **Objective**
 
