@@ -700,7 +700,7 @@ deterministic without adding an error-reporting API:
 - accidental passes in some tests are acceptable while other tests expose the
   incomplete implementation.
 
-### Step 7B: Recheck migrated problems for deterministic returns
+### ✅ Step 7B: Recheck migrated problems for deterministic returns
 
 **Objective**
 
