@@ -7,6 +7,14 @@
 /*
 Check whether the given number is power of 2 using bit manipulation.
 */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 bool is_power_of_2(uint32_t a);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
