@@ -933,7 +933,7 @@ Suggested commit:
 refactor: migrate memcpy problem to cmake and googletest
 ```
 
-### Step 13: Migrate `006_memmove`
+### ✅ Step 13: Migrate `006_memmove`
 
 **Objective**
 
