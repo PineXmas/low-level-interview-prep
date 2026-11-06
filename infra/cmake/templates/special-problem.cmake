@@ -4,16 +4,19 @@ set(PROBLEM_TARGET "prob_${PROBLEM_NAME}")
 
 # Customize this list with every source that belongs to the problem. Unlike the
 # standard template, this template intentionally does not discover sources.
-set(PROBLEM_SOURCES
-    "${CMAKE_CURRENT_SOURCE_DIR}/test_runner.cpp"
-    # "${CMAKE_CURRENT_SOURCE_DIR}/problem_impl.c"
-)
+if(NOT DEFINED PROBLEM_SOURCES)
+    set(PROBLEM_SOURCES
+        "${CMAKE_CURRENT_SOURCE_DIR}/test_runner.cpp"
+    )
+endif()
 
 # Add problem-local or infrastructure include directories here as needed.
-set(PROBLEM_INCLUDE_DIRECTORIES
-    "${CMAKE_CURRENT_SOURCE_DIR}"
-    "${REPOSITORY_ROOT}/infra/support"
-)
+if(NOT DEFINED PROBLEM_INCLUDE_DIRECTORIES)
+    set(PROBLEM_INCLUDE_DIRECTORIES
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        "${REPOSITORY_ROOT}/infra/support"
+    )
+endif()
 
 # Add optional compile definitions and libraries in these lists.
 set(PROBLEM_COMPILE_DEFINITIONS)
