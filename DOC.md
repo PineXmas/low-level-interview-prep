@@ -109,6 +109,17 @@ A problem directory owns:
 
 This separation keeps problem implementations independent and makes `problems/` suitable for future growth.
 
+### CMake problem manifests
+
+Migrated problems use a CMake manifest that includes either the standard
+template or the special template under
+[infra/cmake/templates](infra/cmake/templates). Use the special template when
+the problem needs an explicit source list, additional infrastructure source,
+extra libraries or compile definitions, platform-specific setup, or a
+non-standard test arrangement. Use the standard template when all local
+implementation `.c` files and the conventional `test_runner.cpp` are
+appropriate.
+
 ## 4. Architecture
 
 ### 4.1 Framework pipeline

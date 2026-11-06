@@ -861,7 +861,7 @@ Suggested commit:
 refactor: migrate bit manipulation problem to cmake and googletest
 ```
 
-### Step 11: Add the special CMake template
+### ✅ Step 11: Add the special CMake template
 
 **Objective**
 
