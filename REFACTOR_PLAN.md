@@ -892,7 +892,7 @@ Suggested commit:
 build: add special problem cmake template
 ```
 
-### Step 12: Migrate `005_memcpy`
+### ✅ Step 12: Migrate `005_memcpy`
 
 **Objective**
 
