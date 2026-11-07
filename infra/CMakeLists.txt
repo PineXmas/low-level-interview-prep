@@ -26,3 +26,4 @@ add_executable(framework_smoke_test support/framework_smoke_test.cpp)
 target_link_libraries(framework_smoke_test PRIVATE gtest_main)
 
 add_test(NAME framework_smoke_test COMMAND framework_smoke_test)
+set_tests_properties(framework_smoke_test PROPERTIES LABELS framework)

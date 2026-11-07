@@ -971,7 +971,7 @@ Suggested commit:
 refactor: migrate memmove problem to cmake and googletest
 ```
 
-### Step 14: Verify the complete new workflow
+### ✅ Step 14: Verify the complete new workflow
 
 **Objective**
 
