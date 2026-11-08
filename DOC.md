@@ -179,9 +179,15 @@ ordered by importance.
 
 1. Automate Dev Container onboarding, including compiler selection, CMake
    configuration, repository settings, and unavoidable trust/reopen steps.
-2. Add a simple VS Code workflow for building and testing a selected problem
-   or all problems, with automatic test refresh and useful failure output.
-   New problems should not require per-problem editor configuration.
+2. Add a friendly VS Code workflow that detects the currently active problem
+   directory and provides a prebuilt button, task, or command to build only
+   that problem and immediately run its tests. The normal practice loop should
+   require no typed CMake or CTest commands: users should be able to edit an
+   implementation, click or invoke the action, and see useful build/test
+   failures. Also provide an equivalent action for building and testing all
+   problems, refresh the test UI automatically, and keep the documented
+   terminal commands as a fallback. New problems should not require
+   per-problem editor configuration.
 3. Add problem-directory validation and scaffolding for the
    `NNN_problem_name` layout, required files, and standard template output.
    Report invalid names instead of silently renaming directories.
