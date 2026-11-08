@@ -5,7 +5,7 @@
         "vscode": {
             "extensions": [
                 "ms-vscode.cpptools",
-                "matepek.vscode-catch2-testadapter"
+                "fredericbonnet.cmake-test-adapter"
             ]
         }
     }

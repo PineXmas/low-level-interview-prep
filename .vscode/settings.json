@@ -1,16 +1,4 @@
 {
   "cmake.ctest.testExplorerIntegrationEnabled": false,
-  "cmakeExplorer.suiteDelimiter": "/",
-  "acutestExplorer.testGroups": [
-    "problems/self_check",
-    "problems/bit_manip",
-    "problems/swap_2_nums",
-    "problems/check_power_of_2",
-    "problems/memcpy",
-    "problems/memmove",
-    "problems/endianess_detection",
-  ],
-  "acutestExplorer.testGroupsExeFile": "test.out",
-  "acutestExplorer.testGroupsSrcFile": "test_runner.c",
-  "acutestExplorer.logpanel": true
+  "cmakeExplorer.suiteDelimiter": "/"
 }

@@ -1017,7 +1017,7 @@ Suggested commit:
 test: verify complete cmake and ctest workflow
 ```
 
-### Step 15: Clean remaining legacy workflow files
+### ✅ Step 15: Clean remaining legacy workflow files
 
 **Objective**
 
@@ -1114,7 +1114,14 @@ is introduced.
    output.
 4. Add framework diagnostics and problem status metadata so configuration,
    build, discovery, infrastructure, and expected unfinished-exercise
-   failures are clearly distinguishable.
+   failures are clearly distinguishable. Define explicit status metadata for
+   each problem, such as framework-only, expected-to-pass, or intentionally
+   unfinished. Expose that metadata through CMake/CTest labels or properties,
+   and add a diagnostic command or framework test that reports configuration,
+   build, discovery, infrastructure-test, and expected exercise failures
+   separately. Document the diagnostic workflow so users do not mistake the
+   full-suite nonzero result from unfinished exercises for a refactor or
+   framework regression.
 
 ### Priority 2: Build and maintenance quality
 
